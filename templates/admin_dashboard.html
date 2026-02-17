@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - DustAid{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Admin Dashboard</h1>
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Total Donations</h5>
+                    <p class="display-6">${{ "%.2f"|format(total_donations) }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Total Campaigns</h5>
+                    <p class="display-6">{{ total_campaigns }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Active Campaigns</h5>
+                    <p class="display-6">{{ active_campaigns }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Total Users</h5>
+                    <p class="display-6">{{ total_users }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Pending Donations</h2>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Reference</th>
+                            <th>Amount</th>
+                            <th>Campaign</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for donation in pending_donations %}
+                        <tr>
+                            <td>{{ donation.reference_id }}</td>
+                            <td>${{ "%.2f"|format(donation.amount) }}</td>
+                            <td>{{ donation.campaign.name }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('approve_donation', donation_id=donation.id) }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('reject_donation', donation_id=donation.id) }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center">No pending donations.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h2>Quick Actions</h2>
+            <div class="list-group">
+                <a href="{{ url_for('admin_campaigns') }}" class="list-group-item list-group-item-action">Manage Campaigns</a>
+                <a href="{{ url_for('admin_users') }}" class="list-group-item list-group-item-action">Manage Users</a>
+                <a href="{{ url_for('admin_donations') }}" class="list-group-item list-group-item-action">View All Donations</a>
+                <a href="{{ url_for('admin_locations') }}" class="list-group-item list-group-item-action">Manage Dust Locations</a>
+                <a href="{{ url_for('new_campaign_page') }}" class="list-group-item list-group-item-action">Create New Campaign</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

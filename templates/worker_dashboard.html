@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Worker Dashboard - DustAid{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Worker Dashboard</h1>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Assigned Locations</h5>
+                    <p class="display-4">{{ total_assigned }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Completed</h5>
+                    <p class="display-4 text-success">{{ completed }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">In Progress</h5>
+                    <p class="display-4 text-warning">{{ in_progress }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="mb-3">Your Assigned Locations</h2>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Address</th>
+                    <th>Description</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                    <th>Reported</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for loc in locations %}
+                <tr>
+                    <td>{{ loc.id }}</td>
+                    <td>{{ loc.address }}</td>
+                    <td>{{ loc.description|truncate(50) }}</td>
+                    <td>
+                        <span class="badge bg-{{ 'danger' if loc.severity == 'high' else 'warning' if loc.severity == 'medium' else 'info' }}">
+                            {{ loc.severity }}
+                        </span>
+                    </td>
+                    <td>{{ loc.status }}</td>
+                    <td>{{ loc.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <a href="{{ url_for('get_dust_location', location_id=loc.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                        {% if loc.status != 'completed' %}
+                        <form method="POST" action="{{ url_for('update_location_status', location_id=loc.id) }}" style="display:inline;">
+                            <input type="hidden" name="status" value="completed">
+                            <button type="submit" class="btn btn-sm btn-success">Mark Completed</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center">No locations assigned.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

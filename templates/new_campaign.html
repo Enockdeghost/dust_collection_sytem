@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Create Campaign - DustAid{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <h2 class="mb-4">Create New Campaign</h2>
+                    <form id="campaignForm">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Campaign Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="4"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="target_amount" class="form-label">Target Amount ($) *</label>
+                            <input type="number" class="form-control" id="target_amount" name="target_amount" min="1" step="0.01" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="start_date" class="form-label">Start Date *</label>
+                                <input type="datetime-local" class="form-control" id="start_date" name="start_date" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="end_date" class="form-label">End Date *</label>
+                                <input type="datetime-local" class="form-control" id="end_date" name="end_date" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Create Campaign</button>
+                    </form>
+                    <div id="result" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('campaignForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const data = {
+            name: formData.get('name'),
+            description: formData.get('description'),
+            target_amount: parseFloat(formData.get('target_amount')),
+            start_date: new Date(formData.get('start_date')).toISOString(),
+            end_date: new Date(formData.get('end_date')).toISOString()
+        };
+
+        fetch('{{ url_for("create_campaign") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                document.getElementById('result').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+            } else {
+                document.getElementById('result').innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+                document.getElementById('campaignForm').reset();
+                setTimeout(() => window.location.href = '{{ url_for("admin_campaigns") }}', 1500);
+            }
+        })
+        .catch(() => {
+            document.getElementById('result').innerHTML = `<div class="alert alert-danger">An error occurred.</div>`;
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users - DustAid{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Users</h1>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Active</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.full_name or '-' }}</td>
+                    <td>{{ user.email }}</td>
+                    <td><span class="badge bg-info">{{ user.role }}</span></td>
+                    <td>
+                        <span class="badge bg-{{ 'success' if user.is_active else 'secondary' }}">
+                            {{ 'Yes' if user.is_active else 'No' }}
+                        </span>
+                    </td>
+                    <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editUser({{ user.id }})">Edit</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteUser({{ user.id }})">Delete</button>
+                        <button class="btn btn-sm btn-secondary" onclick="toggleActive({{ user.id }})">
+                            {{ 'Deactivate' if user.is_active else 'Activate' }}
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function editUser(id) {
+        // For simplicity, redirect to a user edit page (not implemented)
+        alert('Edit user ' + id + ' (not implemented)');
+    }
+
+    function deleteUser(id) {
+        if (confirm('Delete this user?')) {
+            fetch(`/api/users/${id}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message || 'Deleted');
+                    location.reload();
+                })
+                .catch(() => alert('Error'));
+        }
+    }
+
+    function toggleActive(id) {
+        // Fetch user data, toggle active status via PUT
+        // Simplified: just reload after prompt
+        alert('Toggle active status not directly implemented');
+    }
+</script>
+{% endblock %}

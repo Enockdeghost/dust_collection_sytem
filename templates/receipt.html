@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Donation Receipt - DustAid{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">Donation Receipt</h3>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <h4>DustAid Foundation</h4>
+                        <p>Thank you for your donation!</p>
+                    </div>
+
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Receipt ID</th>
+                            <td>{{ donation.receipt_id }}</td>
+                        </tr>
+                        <tr>
+                            <th>Reference ID</th>
+                            <td>{{ donation.reference_id }}</td>
+                        </tr>
+                        <tr>
+                            <th>Transaction ID</th>
+                            <td>{{ donation.transaction_id }}</td>
+                        </tr>
+                        <tr>
+                            <th>Campaign</th>
+                            <td>{{ donation.campaign.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Donor</th>
+                            <td>
+                                {% if donation.is_anonymous %}
+                                    Anonymous
+                                {% elif donation.donor %}
+                                    {{ donation.donor.full_name or donation.donor.username }}
+                                {% else %}
+                                    Guest
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Amount</th>
+                            <td><strong>${{ "%.2f"|format(donation.amount) }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Payment Method</th>
+                            <td>{{ donation.payment_method }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date</th>
+                            <td>{{ donation.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status</th>
+                            <td><span class="badge bg-success">{{ donation.status }}</span></td>
+                        </tr>
+                    </table>
+
+                    <div class="text-center mt-4">
+                        <p>This is an electronically generated receipt. It is valid without signature.</p>
+                        <button onclick="window.print()" class="btn btn-primary">Print Receipt</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

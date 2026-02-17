@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Dust Locations - DustAid{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Reported Dust Locations</h1>
+        <a href="{{ url_for('report_location_page') }}" class="btn btn-primary">Report New Location</a>
+    </div>
+
+    <div class="row">
+        {% for loc in locations %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        Location #{{ loc.id }}
+                        <span class="badge bg-{{ 'danger' if loc.severity == 'high' else 'warning' if loc.severity == 'medium' else 'info' }}">
+                            {{ loc.severity }}
+                        </span>
+                    </h5>
+                    <p class="card-text">{{ loc.address }}</p>
+                    <p class="card-text"><small class="text-muted">{{ loc.description }}</small></p>
+                    <p class="card-text">
+                        <strong>Status:</strong> {{ loc.status }}<br>
+                        <strong>Reported:</strong> {{ loc.created_at.strftime('%Y-%m-%d') }}
+                    </p>
+                    {% if current_user.role == 'admin' or current_user.id == loc.reported_by %}
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteLocation({{ loc.id }})">Delete</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center">
+            <p>No dust locations reported yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function deleteLocation(id) {
+        if (confirm('Delete this location?')) {
+            fetch(`/api/dust-locations/${id}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message || 'Deleted');
+                    location.reload();
+                })
+                .catch(() => alert('Error'));
+        }
+    }
+</script>
+{% endblock %}

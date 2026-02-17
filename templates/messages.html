@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Messages - DustAid{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Messages</h1>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">Send New Message</div>
+                <div class="card-body">
+                    <form id="messageForm">
+                        <div class="mb-3">
+                            <label for="receiver_search" class="form-label">Search Recipient</label>
+                            <input type="text" class="form-control" id="receiver_search" placeholder="Type username...">
+                            <input type="hidden" id="receiver_id" name="receiver_id">
+                            <div id="searchResults" class="list-group mt-2"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Subject</label>
+                            <input type="text" class="form-control" id="subject" name="subject">
+                        </div>
+                        <div class="mb-3">
+                            <label for="content" class="form-label">Message</label>
+                            <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Send</button>
+                    </form>
+                    <div id="sendResult" class="mt-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <h3>Inbox</h3>
+            <div class="list-group">
+                {% for message in messages %}
+                <a href="#" class="list-group-item list-group-item-action {% if not message.is_read %}fw-bold{% endif %}" onclick="markRead({{ message.id }})">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1">{{ message.subject or '(no subject)' }}</h6>
+                        <small>{{ message.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </div>
+                    <p class="mb-1">{{ message.content|truncate(100) }}</p>
+                    <small>From: {{ message.sender.full_name or message.sender.username }}</small>
+                </a>
+                {% else %}
+                <div class="list-group-item">No messages.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let searchTimeout;
+    document.getElementById('receiver_search').addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value;
+        if (query.length < 2) return;
+        searchTimeout = setTimeout(() => {
+            fetch(`{{ url_for("search_users") }}?q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(users => {
+                    const results = document.getElementById('searchResults');
+                    results.innerHTML = '';
+                    users.forEach(user => {
+                        const item = document.createElement('a');
+                        item.href = '#';
+                        item.className = 'list-group-item list-group-item-action';
+                        item.innerHTML = `${user.full_name || user.username} (${user.role})`;
+                        item.onclick = (e) => {
+                            e.preventDefault();
+                            document.getElementById('receiver_id').value = user.id;
+                            document.getElementById('receiver_search').value = user.full_name || user.username;
+                            results.innerHTML = '';
+                        };
+                        results.appendChild(item);
+                    });
+                });
+        }, 300);
+    });
+
+    document.getElementById('messageForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const data = {
+            receiver_id: document.getElementById('receiver_id').value,
+            subject: document.getElementById('subject').value,
+            content: document.getElementById('content').value
+        };
+        if (!data.receiver_id) {
+            alert('Please select a recipient');
+            return;
+        }
+        fetch('{{ url_for("send_message") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                document.getElementById('sendResult').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+            } else {
+                document.getElementById('sendResult').innerHTML = `<div class="alert alert-success">Message sent!</div>`;
+                document.getElementById('messageForm').reset();
+                document.getElementById('receiver_id').value = '';
+            }
+        })
+        .catch(() => alert('Error'));
+    });
+
+    function markRead(id) {
+        fetch(`/api/messages/${id}/read`, { method: 'POST' })
+            .then(() => location.reload())
+            .catch(() => alert('Error marking as read'));
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Dust Locations - DustAid{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Dust Locations</h1>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Address</th>
+                    <th>Description</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                    <th>Reporter</th>
+                    <th>Assigned To</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for loc in locations %}
+                <tr>
+                    <td>{{ loc.id }}</td>
+                    <td>{{ loc.address }}</td>
+                    <td>{{ loc.description|truncate(30) }}</td>
+                    <td>
+                        <span class="badge bg-{{ 'danger' if loc.severity == 'high' else 'warning' if loc.severity == 'medium' else 'info' }}">
+                            {{ loc.severity }}
+                        </span>
+                    </td>
+                    <td>{{ loc.status }}</td>
+                    <td>
+                        {% if loc.reporter %}
+                            {{ loc.reporter.full_name or loc.reporter.username }}
+                        {% else %}
+                            Unknown
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if loc.assigned_to %}
+                            {{ loc.assigned.full_name or loc.assigned.username }}
+                        {% else %}
+                            <span class="text-muted">Unassigned</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not loc.assigned_to %}
+                        <form method="POST" action="{{ url_for('assign_dust_location', location_id=loc.id) }}" style="display:inline;">
+                            <select name="worker_id" required>
+                                <option value="">Assign to...</option>
+                                {% for worker in workers %}
+                                <option value="{{ worker.id }}">{{ worker.full_name or worker.username }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-primary">Assign</button>
+                        </form>
+                        {% endif %}
+                        <button class="btn btn-sm btn-danger" onclick="deleteLocation({{ loc.id }})">Delete</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function deleteLocation(id) {
+        if (confirm('Delete this location?')) {
+            fetch(`/api/dust-locations/${id}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message || 'Deleted');
+                    location.reload();
+                })
+                .catch(() => alert('Error'));
+        }
+    }
+</script>
+{% endblock %}

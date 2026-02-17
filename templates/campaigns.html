@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Campaigns - DustAid{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Active Campaigns</h1>
+    <div class="row">
+        {% for campaign in campaigns %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ campaign.name }}</h5>
+                    <p class="card-text">{{ campaign.description|truncate(120) }}</p>
+                    <div class="mb-3">
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: {{ (campaign.collected_amount / campaign.target_amount * 100) if campaign.target_amount > 0 else 0 }}%;" 
+                                 aria-valuenow="{{ campaign.collected_amount }}" aria-valuemin="0" aria-valuemax="{{ campaign.target_amount }}"></div>
+                        </div>
+                        <small class="text-muted">${{ campaign.collected_amount }} raised of ${{ campaign.target_amount }}</small>
+                    </div>
+                    <p class="text-muted small">
+                        <i class="far fa-calendar-alt"></i> Ends: {{ campaign.end_date.strftime('%Y-%m-%d') }}
+                    </p>
+                    <a href="{{ url_for('campaign_detail', campaign_id=campaign.id) }}" class="btn btn-primary w-100">View Campaign</a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center">
+            <p class="lead">No campaigns available at the moment.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

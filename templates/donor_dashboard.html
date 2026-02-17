@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Donor Dashboard - DustAid{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Donor Dashboard</h1>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Total Donated</h5>
+                    <p class="display-4 text-success">${{ "%.2f"|format(total_donated) }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Donations Made</h5>
+                    <p class="display-4">{{ donations|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <a href="{{ url_for('campaigns_page') }}" class="btn btn-primary">Browse Campaigns</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="mb-3">Your Donation History</h2>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Campaign</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Receipt</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for donation in donations %}
+                <tr>
+                    <td>{{ donation.reference_id }}</td>
+                    <td>{{ donation.campaign.name }}</td>
+                    <td>${{ "%.2f"|format(donation.amount) }}</td>
+                    <td>{{ donation.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <span class="badge bg-{{ 'success' if donation.status == 'success' else 'warning' }}">
+                            {{ donation.status }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if donation.receipt_id %}
+                        <a href="{{ url_for('get_receipt', receipt_id=donation.receipt_id) }}" target="_blank">View</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center">No donations yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

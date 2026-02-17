@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Report Dust Location - DustAid{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <h2 class="mb-4">Report a Dust Hotspot</h2>
+                    <form id="reportForm">
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address or Landmark *</label>
+                            <input type="text" class="form-control" id="address" name="address" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="latitude" class="form-label">Latitude</label>
+                                <input type="number" step="any" class="form-control" id="latitude" name="latitude">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="longitude" class="form-label">Longitude</label>
+                                <input type="number" step="any" class="form-control" id="longitude" name="longitude">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="severity" class="form-label">Severity</label>
+                            <select class="form-select" id="severity" name="severity">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Submit Report</button>
+                    </form>
+                    <div id="result" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('reportForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const data = {
+            address: formData.get('address'),
+            latitude: parseFloat(formData.get('latitude')) || 0,
+            longitude: parseFloat(formData.get('longitude')) || 0,
+            description: formData.get('description'),
+            severity: formData.get('severity')
+        };
+
+        fetch('{{ url_for("report_dust_location") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                document.getElementById('result').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+            } else {
+                document.getElementById('result').innerHTML = `<div class="alert alert-success">Location reported successfully!</div>`;
+                document.getElementById('reportForm').reset();
+                setTimeout(() => window.location.href = '{{ url_for("locations_page") }}', 1500);
+            }
+        })
+        .catch(() => {
+            document.getElementById('result').innerHTML = `<div class="alert alert-danger">An error occurred.</div>`;
+        });
+    });
+</script>
+{% endblock %}

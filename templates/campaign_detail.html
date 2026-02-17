@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}{{ campaign.name }} - DustAid{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('campaigns_page') }}">Campaigns</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ campaign.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-8">
+            <h1>{{ campaign.name }}</h1>
+            <p class="lead">{{ campaign.description }}</p>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5>Campaign Progress</h5>
+                    <div class="progress mb-2" style="height: 20px;">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ (campaign.collected_amount / campaign.target_amount * 100) if campaign.target_amount > 0 else 0 }}%;" 
+                             aria-valuenow="{{ campaign.collected_amount }}" aria-valuemin="0" aria-valuemax="{{ campaign.target_amount }}">
+                            {{ "%.1f"|format((campaign.collected_amount / campaign.target_amount * 100) if campaign.target_amount > 0 else 0) }}%
+                        </div>
+                    </div>
+                    <p><strong>${{ campaign.collected_amount }}</strong> raised of ${{ campaign.target_amount }} target</p>
+                    <p><i class="far fa-calendar-alt"></i> Ends: {{ campaign.end_date.strftime('%B %d, %Y') }}</p>
+                </div>
+            </div>
+
+            <h3>Recent Donations</h3>
+            <div id="donations-list">
+                <p>Loading donations...</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Support This Campaign</h5>
+                    <a href="{{ url_for('donate_page', campaign_id=campaign.id) }}" class="btn btn-primary btn-lg w-100 mb-3">Donate Now</a>
+                    <button id="showQR" class="btn btn-outline-secondary w-100">Show QR Code</button>
+                    <div id="qrCode" style="display:none; margin-top:15px;">
+                        <img src="{{ url_for('get_campaign_qr', campaign_id=campaign.id) }}" alt="QR Code" class="img-fluid">
+                        <p class="small mt-2">Scan to donate via mobile</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('showQR').addEventListener('click', function() {
+        var qrDiv = document.getElementById('qrCode');
+        if (qrDiv.style.display === 'none') {
+            qrDiv.style.display = 'block';
+            this.textContent = 'Hide QR Code';
+        } else {
+            qrDiv.style.display = 'none';
+            this.textContent = 'Show QR Code';
+        }
+    });
+
+    // Fetch recent donations
+    fetch('{{ url_for("get_campaign_donations", campaign_id=campaign.id) }}')
+        .then(response => response.json())
+        .then(donations => {
+            const list = document.getElementById('donations-list');
+            if (donations.length === 0) {
+                list.innerHTML = '<p>No donations yet. Be the first!</p>';
+                return;
+            }
+            let html = '<ul class="list-group">';
+            donations.slice(0, 10).forEach(d => {
+                html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>${d.donor_name}</span>
+                    <span class="badge bg-primary rounded-pill">$${d.amount}</span>
+                </li>`;
+            });
+            html += '</ul>';
+            list.innerHTML = html;
+        })
+        .catch(() => {
+            document.getElementById('donations-list').innerHTML = '<p>Error loading donations.</p>';
+        });
+</script>
+{% endblock %}
