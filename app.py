@@ -390,7 +390,7 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('home'))
 
-# ==================== USER MANAGEMENT API ROUTES ====================
+#  USER MANAGEMENT API ROUTES 
 
 @app.route('/api/users/<int:user_id>', methods=['GET'])
 @login_required
