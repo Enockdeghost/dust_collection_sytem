@@ -122,7 +122,7 @@ class PaymentRequest(db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# ==================== DECORATORS ====================
+#  DECORATORS 
 
 def role_required(*roles):
     def decorator(f):
