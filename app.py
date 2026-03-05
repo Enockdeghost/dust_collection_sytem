@@ -299,7 +299,7 @@ def profile_page():
     total_donated = sum(d.amount for d in donations if d.status == 'success')
     return render_template('profile.html', donations=donations, total_donated=total_donated)
 
-# ==================== AUTHENTICATION API ROUTES ====================
+#  AUTHENTICATION API ROUTES 
 
 @app.route('/api/register', methods=['POST'])
 def register():
