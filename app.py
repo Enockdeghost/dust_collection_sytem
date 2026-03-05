@@ -23,7 +23,7 @@ db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login_page'
 
-# ==================== MODELS ====================
+# some errors found
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
