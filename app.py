@@ -138,7 +138,7 @@ def role_required(*roles):
         return decorated_function
     return decorator
 
-# ==================== HELPER FUNCTIONS ====================
+#  HELPER FUNCTIONS
 
 def get_request_data():
     """Helper function to get request data regardless of content type"""
