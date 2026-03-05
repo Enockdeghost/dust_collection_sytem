@@ -116,7 +116,7 @@ class PaymentRequest(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     donation = db.relationship('Donation', backref='payment_requests')
 
-# ==================== LOGIN MANAGER ====================
+#  LOGIN MANAGER =
 
 @login_manager.user_loader
 def load_user(user_id):
